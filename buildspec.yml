@@ -1,0 +1,17 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login-password | docker login --username AWS --password-stdin <ecr_uri>)
+  build:
+    commands:
+      - echo Build started on `date`
+      - docker build -t brain-tasks-app .
+      - docker tag brain-tasks-app <ecr_repo_uri>:latest
+  post_build:
+    commands:
+      - docker push <ecr_repo_uri>:latest
+      - printf '[{"name":"brain-tasks","imageUri":"%s"}]' <ecr_repo_uri>:latest > imagedefinitions.json
+artifacts:
+  files: imagedefinitions.json
