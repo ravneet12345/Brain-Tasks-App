@@ -4,7 +4,7 @@ phases:
   install:
     commands:
       - echo Installing kubectl...
-      - bash -c "KUBECTL_VERSION=$(curl -s https://dl.k8s.io/release/stable.txt) && curl -LO https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+      - curl -LO https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl
       - chmod +x kubectl
       - mv kubectl /usr/local/bin/
       - echo Setting up kubeconfig...
