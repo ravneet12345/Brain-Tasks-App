@@ -13,5 +13,9 @@ phases:
     commands:
       - docker push 470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
       - printf '[{"name":"brain-tasks","imageUri":"%s"}]' 470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest > imagedefinitions.json
+  deploy:
+    commands:
+      - echo Updating Kubernetes Deployment...
+      - kubectl set image deployment/brain-tasks-deployment brain-tasks-container=470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
 artifacts:
   files: imagedefinitions.json
