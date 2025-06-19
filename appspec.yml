@@ -1,0 +1,8 @@
+version: 0.0
+Resources:
+  - myEKSDeployment:
+      Type: AWS::EKS::Application
+      Properties:
+        TaskDefinition: imagedefinitions.json
+        Service: brain-tasks-service
+        Cluster: trend-apps-cluster
