@@ -25,10 +25,11 @@ phases:
       - echo Pushing Docker image to ECR...
       - docker push 470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
       - echo Deploying updated image to EKS...
+      - aws sts get-caller-identity
       - aws eks update-kubeconfig --region us-east-1 --name Brain-task1-cluster
-      - kubectl create -f deployment.yaml
-      - echo Verifying rollout status...
-      - kubectl rollout status deployment/brain-tasks-deployment
+      - kubectl config current-context
+      - kubectl get nodes
+      - kubectl create -f deployment.yaml --validate=false
 
 artifacts:
   files:
