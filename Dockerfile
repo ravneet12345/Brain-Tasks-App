@@ -1,5 +1,5 @@
 # Use an official Nginx image
-FROM nginx:alpine
+FROM public.ecr.aws/nginx/nginx:alpine
 
 # Remove default Nginx static assets
 RUN rm -rf /usr/share/nginx/html/*
