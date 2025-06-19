@@ -8,7 +8,7 @@ phases:
       - chmod +x kubectl
       - mv kubectl /usr/local/bin/
       - echo Setting up kubeconfig...
-      - aws eks update-kubeconfig --name Brain-task-cluster --region us-east-1
+      - aws eks update-kubeconfig --name Brain-task1-cluster --region us-east-1
 
   pre_build:
     commands:
