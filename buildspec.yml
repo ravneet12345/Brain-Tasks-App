@@ -2,13 +2,13 @@ version: 0.2
 
 phases:
   install:
-  commands:
-    - echo Installing kubectl...
-    - bash -c 'KUBECTL_VERSION=$(curl -s https://dl.k8s.io/release/stable.txt) && curl -LO https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl'
-    - chmod +x kubectl
-    - mv kubectl /usr/local/bin/
-    - echo Setting up kubeconfig...
-    - aws eks update-kubeconfig --name Brain-task-cluster --region us-east-1
+    commands:
+      - echo Installing kubectl...
+      - bash -c 'KUBECTL_VERSION=$(curl -s https://dl.k8s.io/release/stable.txt) && curl -LO https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl'
+      - chmod +x kubectl
+      - mv kubectl /usr/local/bin/
+      - echo Setting up kubeconfig...
+      - aws eks update-kubeconfig --name Brain-task-cluster --region us-east-1
 
   pre_build:
     commands:
@@ -27,6 +27,8 @@ phases:
       - docker push 470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
       - echo Deploying updated image to EKS...
       - kubectl set image deployment/brain-tasks-deployment brain-tasks-container=470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
+      - echo Verifying rollout status...
+      - kubectl rollout status deployment/brain-tasks-deployment
 
 artifacts:
   files:
