@@ -7,12 +7,23 @@ phases:
       - curl -LO https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl
       - chmod +x kubectl
       - mv kubectl /usr/local/bin/
-      - echo Setting up kubeconfig...
-
+      - echo Installing AWS CLI v2...
+      - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      - unzip awscliv2.zip
+      - sudo ./aws/install
+      - echo Setup complete.
+  
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password | docker login --username AWS --password-stdin 470397863283.dkr.ecr.us-east-1.amazonaws.com
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 470397863283.dkr.ecr.us-east-1.amazonaws.com
+      - echo Verifying AWS credentials...
+      - aws sts get-caller-identity
+      - echo Updating kubeconfig for EKS cluster...
+      - aws eks update-kubeconfig --region us-east-1 --name trend-apps-cluster
+      - echo Checking kubectl context and cluster nodes...
+      - kubectl config current-context
+      - kubectl get nodes
 
   build:
     commands:
@@ -25,11 +36,8 @@ phases:
       - echo Pushing Docker image to ECR...
       - docker push 470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
       - echo Deploying updated image to EKS...
-      - aws sts get-caller-identity
-      - aws eks update-kubeconfig --region us-east-1 --name trend-apps-cluster
-      - kubectl config current-context
-      - kubectl get nodes
-      - kubectl create -f deployment.yaml --validate=false
+      - kubectl set image deployment/brain-tasks-deployment brain-tasks-container=470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
+      - echo Deployment complete.
 
 artifacts:
   files:
