@@ -11,7 +11,7 @@ phases:
       - docker tag brain-tasks-app 470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
   post_build:
     commands:
-      - docker push <ecr_repo_uri>:latest
+      - docker push 470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
       - printf '[{"name":"brain-tasks","imageUri":"%s"}]' 470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest > imagedefinitions.json
 artifacts:
   files: imagedefinitions.json
