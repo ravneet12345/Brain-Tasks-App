@@ -8,7 +8,6 @@ phases:
       - chmod +x kubectl
       - mv kubectl /usr/local/bin/
       - echo Setting up kubeconfig...
-      - aws eks update-kubeconfig --name Brain-task1-cluster --region us-east-1
 
   pre_build:
     commands:
@@ -26,7 +25,7 @@ phases:
       - echo Pushing Docker image to ECR...
       - docker push 470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
       - echo Deploying updated image to EKS...
-      - aws eks update-kubeconfig --name Brain-task1-cluster --region us-east-1
+      - aws eks update-kubeconfig --region us-east-1 --name Brain-task1-cluster
       - kubectl set image deployment/brain-tasks-deployment brain-tasks-container=470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
       - echo Verifying rollout status...
       - kubectl rollout status deployment/brain-tasks-deployment
