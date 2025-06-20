@@ -36,6 +36,8 @@ phases:
       - echo Pushing Docker image to ECR...
       - docker push 470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
       - echo Deploying updated image to EKS...
+      - kubectl apply -f deployment.yaml
+      - kubectl apply -f service.yaml
       - kubectl set image deployment/brain-tasks-deployment brain-tasks-container=470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
       - echo Deployment complete.
 
