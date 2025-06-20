@@ -10,7 +10,7 @@ phases:
       - echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
       - source ~/.bashrc
       - echo 'Check kubectl version'
-      - aws eks update-kubeconfig --name Brain-task-cluster --region us-east-1
+      - aws eks update-kubeconfig --name Brain-task1-cluster --region us-east-1
       - kubectl version
   
   pre_build:
