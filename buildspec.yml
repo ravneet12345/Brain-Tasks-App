@@ -10,7 +10,7 @@ phases:
       - echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
       - source ~/.bashrc
       - echo 'Check kubectl version'
-      - kubectl version --short --client
+      - kubectl version
   
   pre_build:
     commands:
