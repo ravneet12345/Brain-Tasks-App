@@ -49,16 +49,19 @@ GitHub → CodePipeline → CodeBuild → Docker Image → ECR → Lambda → EK
 **Dockerfile**:
 
 ```Dockerfile
-FROM node:18-alpine as build
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
+# Use an official Nginx image
+FROM public.ecr.aws/nginx/nginx:alpine
 
-FROM nginx:alpine
-COPY --from=build /app/build /usr/share/nginx/html
+# Remove default Nginx static assets
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy build output to Nginx's web directory
+COPY dist/ /usr/share/nginx/html
+
+# Expose port 80
 EXPOSE 80
+
+# Start Nginx server
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
