@@ -3,43 +3,22 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo Installing app dependencies...
-      - curl -LO https://dl.k8s.io/release/v1.27.2/bin/linux/amd64/kubectl   
-      - chmod +x ./kubectl
-      - mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
-      - echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
-      - source ~/.bashrc
-      - echo 'Check kubectl version'
-      - aws eks update-kubeconfig --name Brain-task1-cluster --region us-east-1
+      - curl -LO https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl
+      - chmod +x kubectl && mv kubectl /usr/local/bin/
+      - aws eks update-kubeconfig --name Brain-task-cluster --region us-east-1
 
-  
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 470397863283.dkr.ecr.us-east-1.amazonaws.com
-      - echo Verifying AWS credentials...
-      - aws sts get-caller-identity
-      - echo Updating kubeconfig for EKS cluster...
-      - aws eks update-kubeconfig --region us-east-1 --name Brain-task1-cluster
-      - echo Checking kubectl context and cluster nodes...
-      - kubectl config current-context
-      - kubectl get nodes
+      - aws ecr get-login-password | docker login --username AWS --password-stdin 470397863283.dkr.ecr.us-east-1.amazonaws.com
 
   build:
     commands:
-      - echo Building Docker image...
       - docker build -t brain-tasks-app .
       - docker tag brain-tasks-app 470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
 
   post_build:
     commands:
-      - echo Pushing Docker image to ECR...
       - docker push 470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
-      - echo Deploying updated image to EKS...
-      - kubectl apply -f deployment.yaml
-      - kubectl apply -f service.yaml
-      - kubectl set image deployment/brain-tasks-deployment brain-tasks-container=470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
-      - echo Deployment complete.
 
 artifacts:
   files:
