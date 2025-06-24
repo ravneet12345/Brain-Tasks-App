@@ -11,7 +11,7 @@ phases:
       - source ~/.bashrc
       - echo 'Check kubectl version'
       - aws eks update-kubeconfig --name Brain-task1-cluster --region us-east-1
-      - kubectl version
+
   
   pre_build:
     commands:
