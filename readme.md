@@ -236,15 +236,3 @@ AWS_REGION=us-east-1
 - Web App accessible via Load Balancer
 
 ---
-
-## 📞 Final Submission Checklist
-
--
-
----
-
-> **Need Help?**\
-> Let me know if you'd like a zipped bundle or infrastructure-as-code templates (Terraform/CDK).
-
-download readme file
-
