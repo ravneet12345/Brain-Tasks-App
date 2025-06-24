@@ -8,7 +8,7 @@ def handler(event, context):
         subprocess.run([
             "aws", "eks", "update-kubeconfig",
             "--name", os.environ['CLUSTER_NAME'],
-            "--region", os.environ['AWS_REGION']
+            "--region", os.environ['REGION']
         ], check=True)
 
         subprocess.run([
