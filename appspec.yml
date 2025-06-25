@@ -1,6 +1,0 @@
-version: 0.0
-Resources:
-  - ResourceType: AWS::Lambda::Function
-    ResourceName: deploy
-    FunctionName: deploy
-    Alias: live
