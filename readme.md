@@ -23,7 +23,7 @@ This project demonstrates a full CI/CD pipeline for deploying a React-based appl
 ## 🚀 Deployment Architecture
 
 ```text
-GitHub → CodePipeline → CodeBuild → Docker Image → ECR → Lambda → EKS
+GitHub → CodePipeline → CodeBuild → Docker Image → ECR → EKS
 ```
 
 ---
