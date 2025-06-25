@@ -22,5 +22,6 @@ phases:
 
 artifacts:
   files:
+    - appspec.yml
     - deployment.yaml
     - service.yaml
