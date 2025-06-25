@@ -22,4 +22,5 @@ phases:
 
 artifacts:
   files:
-    - '**/*'
+    - deployment.yaml
+    - service.yaml
