@@ -1,8 +1,5 @@
 version: 0.0
 Resources:
-  - myApp:
-      Type: AWS::EKS::Application
-      Properties:
-        ClusterName: brain-tasks-cluster
-        ServiceName: brain-tasks-service
-        FileName: deployment.yaml
+  - ResourceType: AWS::Lambda::Function
+    FunctionName: deploy
+    Alias: live
