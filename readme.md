@@ -7,7 +7,6 @@ This project demonstrates a full CI/CD pipeline for deploying a React-based appl
 - **Amazon EKS (Kubernetes)**
 - **AWS CodePipeline**
 - **AWS CodeBuild**
-- **AWS Lambda (for deployment to EKS)**
 - **CloudWatch (for monitoring)**
 
 ---
@@ -15,7 +14,7 @@ This project demonstrates a full CI/CD pipeline for deploying a React-based appl
 ## 🔧 Application Overview
 
 - **Repository**: [Brain Tasks App GitHub](https://github.com/Vennilavan12/Brain-Tasks-App.git)
-- **Port**: 3000 (React App)
+- **Port**: 80 (React App)
 - **Frontend**: React
 - **Deployment Target**: Kubernetes via Amazon EKS
 
@@ -37,8 +36,6 @@ GitHub → CodePipeline → CodeBuild → Docker Image → ECR → Lambda → EK
 ├── buildspec.yml
 ├── deployment.yaml
 ├── service.yaml
-├── lambda/
-│   └── handler.py
 └── README.md
 ```
 
@@ -144,48 +141,6 @@ artifacts:
 
 ---
 
-## 🧐 Lambda Deploy Script
-
-**lambda/handler.py**
-
-```python
-import boto3
-import subprocess
-import os
-
-def handler(event, context):
-    job_id = event['CodePipeline.job']['id']
-    try:
-        subprocess.run([
-            "aws", "eks", "update-kubeconfig",
-            "--name", os.environ['CLUSTER_NAME'],
-            "--region", os.environ['AWS_REGION']
-        ], check=True)
-
-        subprocess.run([
-            "kubectl", "set", "image",
-            f"deployment/{os.environ['DEPLOYMENT_NAME']}",
-            f"{os.environ['CONTAINER_NAME']}={os.environ['ECR_IMAGE_URI']}"
-        ], check=True)
-
-        boto3.client('codepipeline').put_job_success_result(jobId=job_id)
-    except Exception as e:
-        boto3.client('codepipeline').put_job_failure_result(
-            jobId=job_id,
-            failureDetails={'message': str(e), 'type': 'JobFailed'}
-        )
-        raise
-```
-
-**Environment Variables:**
-
-```
-CLUSTER_NAME=Brain-task-cluster
-DEPLOYMENT_NAME=brain-tasks-deployment
-CONTAINER_NAME=brain-tasks-container
-ECR_IMAGE_URI=470397863283.dkr.ecr.us-east-1.amazonaws.com/brain-tasks-app:latest
-AWS_REGION=us-east-1
-```
 
 ---
 
@@ -195,11 +150,6 @@ AWS_REGION=us-east-1
 
   - `ecr:*`
   - `eks:*`
-
-- **Lambda Role**:
-
-  - `eks:*`
-  - `codepipeline:PutJob*`
 
 - **CodePipeline Role**:
 
@@ -231,7 +181,6 @@ AWS_REGION=us-east-1
 
 - EKS Cluster running
 - CodeBuild build logs
-- Lambda function setup
 - CodePipeline pipeline overview
 - Web App accessible via Load Balancer
 
