@@ -161,9 +161,8 @@ artifacts:
 ## 📊 Monitoring with CloudWatch
 
 - Enable CloudWatch logging in:
-  - CodeBuild project settings
-  - Lambda function config
-  - EKS pod logs via FluentBit (optional)
+- CodeBuild project settings
+- EKS pod logs via FluentBit (optional)
 
 ---
 
