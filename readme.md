@@ -64,6 +64,12 @@ CMD ["nginx", "-g", "daemon off;"]
 
 ---
 
+## ☘️ ECS Creation
+
+---
+aws ecr create-repository --repository-name brain-tasks-app --region your-region
+
+---
 ## ☘️ Kubernetes Configuration
 
 **deployment.yaml**
