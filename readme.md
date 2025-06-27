@@ -20,19 +20,27 @@ Since the React app is already built, we only need to serve the static files.
 ### Dockerfile:
 
 ```Dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY build ./build
-RUN npm install -g serve
-EXPOSE 3000
-CMD ["serve", "-s", "build"]
+# Use an official Nginx image
+FROM public.ecr.aws/nginx/nginx:alpine
+
+# Remove default Nginx static assets
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy build output to Nginx's web directory
+COPY dist/ /usr/share/nginx/html
+
+# Expose port 80
+EXPOSE 80
+
+# Start Nginx server
+CMD ["nginx", "-g", "daemon off;"]
 ```
 
 ### Build & Run Locally:
 
 ```bash
 docker build -t brain-tasks-app .
-docker run -p 3000:3000 brain-tasks-app
+docker run -p 80:3000 brain-tasks-app
 ```
 
 ---
@@ -166,7 +174,7 @@ Example output:
 
 ```bash
 NAME                  TYPE           CLUSTER-IP      EXTERNAL-IP                                                               PORT(S)
-brain-tasks-service   LoadBalancer   10.100.87.197   aaaaa1111bbb2222ccc3333ddd.elb.ap-south-1.amazonaws.com   80:30234/TCP
+brain-tasks-service   LoadBalancer   10.100.87.197   aaaaa1111bbb2222ccc3333ddd.elb.ap-south-1.amazonaws.com                80:30234/TCP
 ```
 
 Visit the external IP or DNS to view the deployed React app.
@@ -175,7 +183,7 @@ Visit the external IP or DNS to view the deployed React app.
 
 ## 📸 Screenshots
 
-> *(Add these screenshots or link to a Google Drive/OneDrive PDF):*
+> *(Add these screenshots are added on doc):*
 - CodePipeline success
 - CodeBuild logs
 - `kubectl get pods`
