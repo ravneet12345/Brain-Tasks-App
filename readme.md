@@ -1,102 +1,92 @@
-# 👀 Brain Tasks App - Production Deployment on AWS
+# 🧠 Brain Tasks App – Production Deployment on AWS
 
-This project demonstrates a full CI/CD pipeline for deploying a React-based application using:
-
-- **Docker**
-- **Amazon ECR**
-- **Amazon EKS (Kubernetes)**
-- **AWS CodePipeline**
-- **AWS CodeBuild**
-- **CloudWatch (for monitoring)**
+This project demonstrates production-ready deployment of a React application to AWS infrastructure using **Docker**, **ECR**, **EKS**, **CodePipeline**, **CodeBuild**, and **CloudWatch Logs**.
 
 ---
 
-## 🔧 Application Overview
+## 🚀 Application Overview
 
-- **Repository**: [Brain Tasks App GitHub](https://github.com/Vennilavan12/Brain-Tasks-App.git)
-- **Port**: 80 (React App)
-- **Frontend**: React
-- **Deployment Target**: Kubernetes via Amazon EKS
 
----
-
-## 🚀 Deployment Architecture
-
-```text
-GitHub → CodePipeline → CodeBuild → Docker Image → ECR → EKS
-```
+- Customized repo: [My Repo](https://github.com/ravneet12345/Brain-Tasks-App)
+- Frontend: ReactJS (pre-built)
+- Deployment Target: AWS EKS (Kubernetes)
 
 ---
 
-## 🗂️ Project Structure
+## 📦 Dockerization
 
-```
-.
-├── Dockerfile
-├── buildspec.yml
-├── deployment.yaml
-├── service.yaml
-└── README.md
-```
+Since the React app is already built, we only need to serve the static files.
 
----
-
-## 🐳 Dockerization
-
-**Dockerfile**:
+### Dockerfile:
 
 ```Dockerfile
-# Use an official Nginx image
-FROM public.ecr.aws/nginx/nginx:alpine
+FROM node:18-alpine
+WORKDIR /app
+COPY build ./build
+RUN npm install -g serve
+EXPOSE 3000
+CMD ["serve", "-s", "build"]
+```
 
-# Remove default Nginx static assets
-RUN rm -rf /usr/share/nginx/html/*
+### Build & Run Locally:
 
-# Copy build output to Nginx's web directory
-COPY dist/ /usr/share/nginx/html
-
-# Expose port 80
-EXPOSE 80
-
-# Start Nginx server
-CMD ["nginx", "-g", "daemon off;"]
+```bash
+docker build -t brain-tasks-app .
+docker run -p 3000:3000 brain-tasks-app
 ```
 
 ---
 
-## ☘️ ECS Creation
+## 🐳 AWS ECR (Elastic Container Registry)
+
+### Create ECR Repository:
+
+```bash
+aws ecr create-repository   --repository-name brain-tasks-app   --region ap-south-1
+```
+
+### Build, Tag & Push Docker Image:
+
+```bash
+export ECR_URI=470397863283.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app
+
+docker build -t brain-tasks-app .
+docker tag brain-tasks-app:latest $ECR_URI:latest
+
+aws ecr get-login-password --region ap-south-1   | docker login --username AWS --password-stdin $ECR_URI
+
+docker push $ECR_URI:latest
+```
 
 ---
-aws ecr create-repository --repository-name brain-tasks-app --region your-region
 
----
-## ☘️ Kubernetes Configuration
+## ☸️ AWS EKS – Kubernetes Deployment
 
-**deployment.yaml**
+### deployment.yaml:
 
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: brain-tasks-deployment
+  name: brain-tasks-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: brain-tasks
+      app: brain-tasks-app
   template:
     metadata:
       labels:
-        app: brain-tasks
+        app: brain-tasks-app
     spec:
       containers:
-      - name: brain-tasks-container
-        image: <ECR_IMAGE_URI>
-        ports:
-        - containerPort: 80
+        - name: app
+          image: 470397863283.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
+          ports:
+            - containerPort: 3000
 ```
 
-**service.yaml**
+### service.yaml:
 
 ```yaml
 apiVersion: v1
@@ -104,89 +94,101 @@ kind: Service
 metadata:
   name: brain-tasks-service
 spec:
-  type: LoadBalancer
   selector:
-    app: brain-tasks
+    app: brain-tasks-app
   ports:
     - port: 80
-      targetPort: 80
+      targetPort: 3000
+  type: LoadBalancer
+```
+
+### Deploy to EKS:
+
+```bash
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
 ```
 
 ---
 
-## 🏗️ CodeBuild Configuration
+## 🛠️ AWS CodeBuild (CI/CD)
 
-**buildspec.yml**
+### ✅ File: [`buildspec.yml`](https://github.com/ravneet12345/Brain-Tasks-App/blob/prod/buildspec.yml)
 
 ```yaml
 version: 0.2
 
 phases:
-  install:
-    commands:
-      - curl -LO https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl
-      - chmod +x kubectl && mv kubectl /usr/local/bin/
-      - aws eks update-kubeconfig --name Brain-task-cluster --region us-east-1
-
   pre_build:
     commands:
-      - aws ecr get-login-password | docker login --username AWS --password-stdin <ECR_URI>
-
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 470397863283.dkr.ecr.ap-south-1.amazonaws.com
   build:
     commands:
       - docker build -t brain-tasks-app .
-      - docker tag brain-tasks-app <ECR_IMAGE_URI>
-
+      - docker tag brain-tasks-app:latest 470397863283.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
   post_build:
     commands:
-      - docker push <ECR_IMAGE_URI>
-artifacts:
-  files:
-    - '**/*'
+      - docker push 470397863283.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
+      - aws eks update-kubeconfig --region ap-south-1 --name project-cluster
+      - kubectl set image deployment/brain-tasks-app app=470397863283.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
 ```
 
 ---
 
+## 🔄 CodePipeline
+
+### Stages:
+
+1. **Source** – GitHub (`prod` branch)
+2. **Build & Deploy** – CodeBuild using `buildspec.yml`
+
+> Deployment to EKS is handled by `kubectl set image` inside CodeBuild (no CodeDeploy used).
 
 ---
 
-## 🔐 IAM Roles Required
+## 📊 CloudWatch Logs
 
-- **CodeBuild Role**:
-
-  - `ecr:*`
-  - `eks:*`
-
-- **CodePipeline Role**:
-
-  - `codebuild:*`
-  - `lambda:InvokeFunction`
+- **CodeBuild logs** are automatically available in CloudWatch.
+- Future enhancement: Add FluentD or CloudWatch Agent for EKS pod logs.
 
 ---
 
-## 📊 Monitoring with CloudWatch
+## 🌐 Access the App
 
-- Enable CloudWatch logging in:
-- CodeBuild project settings
-- EKS pod logs via FluentBit (optional)
+After deploying, get the LoadBalancer URL:
+
+```bash
+kubectl get svc brain-tasks-service
+```
+
+Example output:
+
+```bash
+NAME                  TYPE           CLUSTER-IP      EXTERNAL-IP                                                               PORT(S)
+brain-tasks-service   LoadBalancer   10.100.87.197   aaaaa1111bbb2222ccc3333ddd.elb.ap-south-1.amazonaws.com   80:30234/TCP
+```
+
+Visit the external IP or DNS to view the deployed React app.
 
 ---
 
-## ✅ Outputs
+## 📸 Screenshots
 
-- **GitHub Repository**: `https://github.com/<your-username>/brain-tasks-deploy`
-- **Load Balancer ARN**: Copy from:
-  ```bash
-  kubectl get svc brain-tasks-service
-  ```
+> *(Add these screenshots or link to a Google Drive/OneDrive PDF):*
+- CodePipeline success
+- CodeBuild logs
+- `kubectl get pods`
+- `kubectl get svc`
+- Browser screenshot of app running via LoadBalancer
 
 ---
 
-## 📸 Screenshots to Include
+## 📌 Notes
 
-- EKS Cluster running
-- CodeBuild build logs
-- CodePipeline pipeline overview
-- Web App accessible via Load Balancer
+- ✅ React app is **pre-built**, no need to run `npm run build`.
+- ✅ Docker only serves static `build/` files using `serve`.
+- ✅ Pipeline is fully automated: GitHub → CodeBuild → ECR → EKS.
+- ✅ LoadBalancer exposes app to internet on port 80 → 3000.
 
 ---
